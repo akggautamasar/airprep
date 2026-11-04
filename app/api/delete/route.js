@@ -1,0 +1,2 @@
+import {del} from "@vercel/blob";import {NextResponse} from "next/server";import {authorized} from "../../../lib/auth";
+export const runtime="nodejs";export async function DELETE(req){if(!authorized(req))return NextResponse.json({error:"Unauthorized"},{status:401});const {url}=await req.json();if(typeof url!=="string"||!url.startsWith("https://")||!url.includes(".public.blob.vercel-storage.com/"))return NextResponse.json({error:"Invalid file URL"},{status:400});await del(url);return NextResponse.json({ok:true})}
