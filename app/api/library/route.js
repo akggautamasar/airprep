@@ -1,0 +1,4 @@
+import {list} from "@vercel/blob";import {NextResponse} from "next/server";
+export const runtime="nodejs";export const dynamic="force-dynamic";
+export async function GET(){try{let cursor;const blobs=[];do{const response=await list({prefix:"airprep/",limit:1000,...(cursor?{cursor}:{})});blobs.push(...response.blobs);cursor=response.hasMore?response.cursor:undefined}while(cursor&&blobs.length<5000);
+return NextResponse.json({items:blobs.filter(b=>b.pathname.endsWith(".html")).map(b=>{const p=b.pathname.split("/");const filename=p[p.length-1];const name=decodeURIComponent(filename.replace(/-[a-zA-Z0-9]{6,}\.html$/,"").replace(/\.html$/,"")).replace(/[_-]+/g," ");return {url:b.url,pathname:b.pathname,title:name,category:p[1]||"Other",size:b.size,uploadedAt:b.uploadedAt}}).sort((a,b)=>new Date(b.uploadedAt)-new Date(a.uploadedAt))},{headers:{"Cache-Control":"no-store"}})}catch(e){return NextResponse.json({error:"Storage is not configured",items:[]},{status:503})}}
